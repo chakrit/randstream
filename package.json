@@ -1,6 +1,6 @@
 {
   "name": "randstream",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A stream that emits endless series of random bytes, with proper backpressure support.",
   "main": "index.js",
   "scripts": {
