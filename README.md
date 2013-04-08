@@ -1,10 +1,10 @@
 
 # RANDSTREAM
 
-A stream that sprays out [random bytes][0] at whoever's listening to its `data`.
-
-The implementation is surprisingly trivial thanks to [isaacs/readable-stream][1] so I
-didn't have any tests but you should just take a look at the code.
+A stream that sprays out [random bytes][0] at whoever's `read()`-ing it or listening to
+its `data`.  The implementation is surprisingly trivial thanks to
+[isaacs/readable-stream][1] so I didn't have any tests but you should just take a good
+look at the code if you are not sure.
 
 # API
 
@@ -43,6 +43,13 @@ This module can also be used from the command line if you install globally with 
 ```sh
 $ npm install -g randstream
 $ rand | hexdump -v
+```
+
+or with different mode and throttling rate:
+
+```sh
+$ rand alpha 16
+mcrqijnorspunxrkkeyehapnpfgqfbkzjfvkctxfdkm^C
 ```
 
 # LICENSE
