@@ -2,72 +2,34 @@
 // index.js - Main randstream exports
 exports = module.exports = (function() {
 
-  var randomBytes = require('crypto').randomBytes
-    , inherits = require('util').inherits
-    , Readable = require('readable-stream');
-
-  var OPTS =
-    { mode: 'random'
-    , defaultSize: 4096
-    };
-
-  // generator modes
-  var generators =
-    { '0':
-      function(size, cb) {
-        var buf = new Buffer(size);
-        buf.fill(0);
-        return cb.call(this, null, buf);
-      }
-
-    , '01':
-      function(size, cb) {
-        var buf = new Buffer(size), i;
-
-        for (i = 0; i < size; i++)
-          buf[i] = [0, 1][i % 2];
-
-        return cb.call(this, null, buf);
-      }
-
-    , random:
-      function(size, cb) {
-        var me = this;
-        return randomBytes(size, function(e, buf) {
-          return cb.call(me, e, buf);
-        });
-      }
-
-    , alpha:
-      function(size, cb) {
-        var me = this;
-        return generators.random(size, function(e, buf) {
-          var i;
-          for (i = 0; i < size; i++)
-            buf[i] = 97 + buf[i] % 26; // 97 is ascii 'a'
-
-          return cb.call(me, e, buf);
-        });
-      }
-    };
+  var inherits = require('util').inherits
+    , Readable = require('readable-stream')
+    , generators = require('./generators');
 
   // core firehose
   function RandStream(options) {
-    var mode, defaultSize, generator;
+    var defaultSize = 4096
+      , generator = generators.random;
 
-    if (options) {
-      mode = options.mode || OPTS.mode;
-      defaultSize = options.defaultSize || OPTS.defaultSize;
-    }
+    // valdiate options
+    options = options || { };
+    if (typeof options.defaultSize !== 'undefined') defaultSize = options.defaultSize;
+    if (typeof options.mode !== 'undefined') generator = generators[options.mode];
 
-    this._generator = generators[mode];
+    if (typeof defaultSize !== 'number')
+      throw new Error('defaultSize option must be a number.');
+    if (typeof generator !== 'function')
+      throw new Error('invalid mode specified.');
+
+    // _read implementation based on specified mode
+    this._generator = generator;
     this._read = function(size) {
       var me = this;
       size = size || defaultSize;
 
       return this._generator(size, function(e, buffer) {
         if (me.push(buffer)) process.nextTick(function() {
-          return me._read(size);
+          return me._read(size); // nextTick prevent call stack explode for fast tty
         });
       });
     };
@@ -79,18 +41,4 @@ exports = module.exports = (function() {
   return RandStream;
 
 })();
-
-
-if (require && require.main === module) (function(RandStream) {
-
-  var mode = process.argv[2] || 'random'
-    , firehose = new RandStream({ mode: mode });
-
-  firehose.pipe(process.stdout);
-
-  process.once('SIGINT', function() {
-    firehose.unpipe(process.stdout);
-  });
-
-})(module.exports);
 
