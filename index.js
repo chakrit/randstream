@@ -17,7 +17,7 @@ exports = module.exports = (function() {
       function(size, cb) {
         var buf = new Buffer(size);
         buf.fill(0);
-        cb.call(this, null, buf);
+        return cb.call(this, null, buf);
       }
 
     , '01':
@@ -27,24 +27,26 @@ exports = module.exports = (function() {
         for (i = 0; i < size; i++)
           buf[i] = [0, 1][i % 2];
 
-        cb.call(this, null, buf);
+        return cb.call(this, null, buf);
       }
 
     , random:
       function(size, cb) {
         var me = this;
-        randomBytes(size, function(e, buf) { cb.call(me, e, buf); });
+        return randomBytes(size, function(e, buf) {
+          return cb.call(me, e, buf);
+        });
       }
 
     , alpha:
       function(size, cb) {
         var me = this;
-        generators.random(size, function(e, buf) {
+        return generators.random(size, function(e, buf) {
           var i;
           for (i = 0; i < size; i++)
             buf[i] = 97 + buf[i] % 26; // 97 is ascii 'a'
 
-          cb.call(me, e, buf);
+          return cb.call(me, e, buf);
         });
       }
     };
@@ -53,7 +55,6 @@ exports = module.exports = (function() {
   function RandStream(options) {
     var mode, defaultSize, generator;
 
-    Readable.call(this, options);
     if (options) {
       mode = options.mode || OPTS.mode;
       defaultSize = options.defaultSize || OPTS.defaultSize;
@@ -64,12 +65,14 @@ exports = module.exports = (function() {
       var me = this;
       size = size || defaultSize;
 
-      this._generator(size, function(e, buffer) {
+      return this._generator(size, function(e, buffer) {
         if (me.push(buffer)) process.nextTick(function() {
           return me._read(size);
         });
       });
     };
+
+    Readable.call(this, options);
   };
 
   inherits(RandStream, Readable);
@@ -86,7 +89,6 @@ if (require && require.main === module) (function(RandStream) {
   firehose.pipe(process.stdout);
 
   process.once('SIGINT', function() {
-    firehose.pause()
     firehose.unpipe(process.stdout);
   });
 
