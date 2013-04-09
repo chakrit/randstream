@@ -28,9 +28,8 @@ exports = module.exports = (function() {
       size = size || defaultSize;
 
       return this._generator(size, function(e, buffer) {
-        if (me.push(buffer)) process.nextTick(function() {
-          return me._read(size); // nextTick prevent call stack explode for fast tty
-        });
+        if (e) return me.emit('error', e);
+        me.push(buffer); // _read auto triggered
       });
     };
 
