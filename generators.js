@@ -82,10 +82,19 @@ exports = module.exports = (function() {
           });
 
         } else {
-          var buf = Buffer(size);
-          var startOffset = getRandomInt(0, pregenBuf.length - (size+1));
-          pregenBuf.copy(buf, 0, startOffset, startOffset + size);
-          return cb.call(this, null, buf);
+          if (false) {
+            // this is safe against downstream consumers writing to the buffer
+            var buf = Buffer(size);
+            var startOffset = getRandomInt(0, pregenBuf.length - (size+1));
+            pregenBuf.copy(buf, 0, startOffset, startOffset + size);
+            return cb.call(this, null, buf);
+          } else {
+            // this is about 7% faster, but is NOT safe against downstream
+            // consumers writing to the buffer
+            var startOffset = getRandomInt(0, pregenBuf.length - (size+1));
+            var buf = pregenBuf.slice(startOffset, startOffset + size);
+            return cb.call(this, null, buf);
+          }
         }
       }
 
