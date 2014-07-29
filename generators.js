@@ -6,6 +6,8 @@ exports = module.exports = (function() {
     , pseudoRandom = require('crypto').pseudoRandomBytes
     , $ = null;
 
+  var pregenbuf;
+
   return $ = (
 
     { '0':
@@ -61,9 +63,34 @@ exports = module.exports = (function() {
         });
       }
 
+    , pregenerated:
+      function(size, cb) {
+        var me = this;
+        if (!pregenbuf || pregenbuf.size < size*2) {
+          return $.random(size*10, function(e, buf) {
+            pregenbuf = buf;
+            var retbuf = Buffer(size);
+            pregenbuf.copy(buf, 0, 0, size);
+            return cb.call(me, e, buf);
+          });
+        } else {
+            var buf = Buffer(size);
+            var startOffset = getRandomInt(0, pregenbuf.length - (size+1));
+            pregenbuf.copy(buf, 0, startOffset, startOffset + size);
+            return cb.call(this, null, buf);
+        }
+      }
+
     }
 
   ); // return
 
 })();
 
+/**
+ * Returns a random integer between min (inclusive) and max (inclusive)
+ * Using Math.round() will give you a non-uniform distribution!
+ */
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}

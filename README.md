@@ -32,6 +32,8 @@ The `mode` option maybe one of the following value:
 * `alpha` - A stream of lowercase alphabets. Useful if you want to see the bytes being
   piped. The original sequence is generated using [`crypto.randomBytes`][0].
 * `num` - Like `alpha` but generate a stream of digits.
+* `pregenerated` - Like `random` but reads from a random start position in a pregenerated
+  buffer of data.
 
 The `defaultSize` is the default size of the buffer to allocate when the underlying
 `_read` implementation is not given a size.

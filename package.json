@@ -20,7 +20,7 @@
   "author": "Chakrit Wichian <service@chakrit.net> (http://chakrit.net)",
   "license": "BSD",
   "dependencies": {
-    "readable-stream": "~0.3.1",
+    "readable-stream": "~1.0.27",
     "throttle": "~1.0.3"
   }
 }
